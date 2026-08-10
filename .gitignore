@@ -3,6 +3,18 @@ node_modules/
 dist/
 build/
 
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Prisma
+backend/prisma/*.db
+
 # Java / Maven / Gradle
 target/
 .gradle/
