@@ -1,0 +1,123 @@
+====================================================================
+SISTEMA DE ALQUILER DE EQUIPOS DE EVENTOS
+Materia: Sistemas Web y Distribuidos
+Integrantes: Tobi / Setrini
+Stack: React + Vite + Tailwind CSS | Node.js + Express | PostgreSQL + Prisma
+====================================================================
+
+TEMA
+--------------------------------------------------------------------
+Sistema de alquiler de equipos para eventos (sonido, mesas, sillas,
+carpas). Maneja reservas, entregas, devoluciones y mora por atraso.
+
+====================================================================
+REQUISITOS MÍNIMOS
+====================================================================
+
+1. AUTENTICACIÓN
+--------------------------------------------------------------------
+- JWT propio: login con email/password.
+- Hash de contraseñas con bcrypt.
+- Token en httpOnly cookie o localStorage.
+- Middleware verifyToken en Express para proteger rutas.
+
+2. AUTORIZACIÓN
+--------------------------------------------------------------------
+- Middleware checkRole(['admin']) por ruta.
+- Admin: acceso total (usuarios, reportes, configuraciones, órdenes).
+- Encargado de depósito: acceso solo a reservas, entregas y
+  devoluciones.
+
+3. FORMULARIO CABECERA-DETALLE
+--------------------------------------------------------------------
+- Tabla Orden (cabecera): cliente, fechaEvento, fechaDevolucion,
+  estado.
+- Tabla OrdenDetalle (detalle, relación 1:N): equipoId, cantidad,
+  precioUnitario, subtotal.
+- Formulario dinámico en el front: agregar/quitar ítems antes de
+  enviar el POST (similar a una factura).
+
+4. ENVÍO DE MAILS
+--------------------------------------------------------------------
+- Nodemailer desde el backend.
+- Trigger 1: al confirmar una reserva -> mail de confirmación.
+- Trigger 2: desde el cron -> recordatorio de devolución.
+- Plantilla y días de anticipación configurables desde tabla
+  Configuracion.
+
+5. REPORTES (mínimo 1 por integrante -> 2 en total)
+--------------------------------------------------------------------
+- Reporte 1: Equipos más alquilados (groupBy sobre OrdenDetalle,
+  ranking por cantidad/ingresos).
+- Reporte 2: Ingresos por período + atrasos (aggregate por rango de
+  fechas + filtro de órdenes en estado "vencido").
+
+6. ROLES DE USUARIO (mínimo 2)
+--------------------------------------------------------------------
+- Campo rol en tabla Usuario (enum: ADMIN, ENCARGADO).
+- Admin es independiente y con acceso total al sistema.
+- Encargado de depósito opera el día a día (reservas, entregas,
+  devoluciones).
+
+7. PAGINACIÓN (incluye búsquedas)
+--------------------------------------------------------------------
+- skip / take de Prisma en listados de órdenes y equipos.
+- Los resultados de búsqueda también se devuelven paginados.
+
+8. BÚSQUEDAS
+--------------------------------------------------------------------
+- Órdenes: filtro por cliente, fecha o estado (Prisma where +
+  contains, insensitive).
+- Equipos: filtro por nombre o categoría.
+
+9. FORMULARIO DE REGISTRO DE USUARIO
+--------------------------------------------------------------------
+- Endpoint protegido, solo accesible por admin.
+- Crea usuario en tabla Usuario con rol asignado.
+- No existe registro público / autoregistro.
+
+10. FORMULARIO DE CONTACTO
+--------------------------------------------------------------------
+- Formulario público.
+- POST a endpoint que dispara mail a soporte de la plataforma
+  (Nodemailer).
+
+11. UI AMIGABLE
+--------------------------------------------------------------------
+- React + Vite + Tailwind CSS.
+- Diseño mobile-first.
+- Loading states y toasts/feedback visual en cada acción.
+
+12. TRANSACCIONES (backend)
+--------------------------------------------------------------------
+- Enum estado en Orden: RESERVA -> ENTREGA -> DEVOLUCION ->
+  (MORA si hay atraso).
+- Cada cambio de estado usa prisma.$transaction:
+  * Actualiza la orden.
+  * Registra log en tabla OrdenHistorial (auditoría: fecha, usuario
+    que ejecutó el cambio).
+
+13. CRON
+--------------------------------------------------------------------
+- node-cron corriendo en el backend (o script separado).
+- Job 1: marca órdenes vencidas (fechaDevolucion pasada sin
+  devolución registrada).
+- Job 2: envía recordatorio de devolución por mail X días antes
+  (según Configuracion).
+
+14. CONFIGURACIONES
+--------------------------------------------------------------------
+- Tabla Configuracion (key-value o campos fijos):
+  * Días de anticipación del recordatorio.
+  * Tarifa de mora por día.
+  * Categorías de equipo.
+  * Plantilla de mail.
+- Página admin para editar estos valores.
+
+====================================================================
+PRÓXIMOS PASOS
+====================================================================
+- Definir modelo de datos completo (schema.prisma).
+- Armar prompt detallado para OpenCode.
+- Setear repo, .env, y estructura de carpetas (backend/frontend).
+====================================================================
