@@ -1,0 +1,15 @@
+# Node / React
+node_modules/
+dist/
+build/
+
+# Java / Maven / Gradle
+target/
+.gradle/
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
